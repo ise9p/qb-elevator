@@ -4,8 +4,11 @@ Config.EnableElevatorSound = true
 
 Config.showTextUI = "qb" 
 
+
 Config.ElevatorWaitTime = 3000
 
+Config.ElevatorArrivalSound = "elevator_arrival" 
+Config.ElevatorStartSound = "elevator_start"  
 
 Config.Elevators = {
     {
