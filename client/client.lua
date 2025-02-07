@@ -108,11 +108,6 @@ RegisterNetEvent('elevator:openMenu', function(data)
     })
 
     exports['qb-menu']:openMenu(menu)
-    if Config.menu == "qb" then
-        exports["qb-core"]:HideText()
-    elseif Config.menu == "ox" then
-        lib.hideTextUI()
-    end
 end)
 
 
