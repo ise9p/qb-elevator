@@ -61,10 +61,12 @@ RegisterNetEvent('elevator:openMenu', function(data)
     local elevator = data.elevator
     local menu = {
         {
-            header = "Elevator - " .. elevator.name,
-            isMenuHeader = true
+            header = "Elevator - " .. elevator.name,  
+            isMenuHeader = true,  
+            icon = "fas fa-building", 
+            text = "Select a floor to go to",  
         }
-    }
+    }    
     
     local playerPed = PlayerPedId()
     local playerCoords = GetEntityCoords(playerPed)
@@ -72,10 +74,10 @@ RegisterNetEvent('elevator:openMenu', function(data)
     local playerJob = playerData.job.name
     local playerGrade = playerData.job.grade.level  
 
-    for _, floor in ipairs(elevator.floors) do
+    for index, floor in ipairs(elevator.floors) do
         local isDisabled = #(playerCoords - floor.coords) <= 1.5  
         local hasAccess = true
-
+    
         if floor.jobRestricted then
             hasAccess = false
             for _, jobData in ipairs(floor.jobRestricted) do
@@ -85,10 +87,10 @@ RegisterNetEvent('elevator:openMenu', function(data)
                 end
             end
         end
-
+    
         if hasAccess then
             table.insert(menu, {
-                header = floor.label,
+                header = string.format("%d. %s", index, floor.label),  
                 icon = floor.icon,
                 disabled = isDisabled,  
                 params = isDisabled and nil or {  
@@ -98,6 +100,7 @@ RegisterNetEvent('elevator:openMenu', function(data)
             })
         end
     end
+    
     
     table.insert(menu, {
         header = "Exit",
@@ -112,6 +115,8 @@ end)
 
 
 
+
+
 RegisterNetEvent('elevator:teleport', function(coords)
     local playerPed = PlayerPedId()
     local currentTime = GetGameTimer()
@@ -122,19 +127,20 @@ RegisterNetEvent('elevator:teleport', function(coords)
         return  
     end
 
-    lastTeleportTime = currentTime
+    lastTeleportTime = currentTime  
 
     if Config.EnableElevatorSound then
-        TriggerServerEvent("InteractSound_SV:PlayOnSource", "elevator_arrival", 0.5)
+        local arrivalSound = Config.ElevatorArrivalSound or "elevator_arrival" 
+        TriggerServerEvent("InteractSound_SV:PlayOnSource", arrivalSound, 0.5)
     end
 
     DoScreenFadeOut(2500)  
-    Wait(4000)  
-
+    Wait(4000) 
     SetEntityCoords(playerPed, coords.x, coords.y, coords.z, false, false, false, false)
 
     if Config.EnableElevatorSound then
-        TriggerServerEvent("InteractSound_SV:PlayOnSource", "elevator_start", 0.5)
+        local startSound = Config.ElevatorStartSound or "elevator_start" 
+        TriggerServerEvent("InteractSound_SV:PlayOnSource", startSound, 0.5)
     end
 
     Wait(1500)  
@@ -142,3 +148,4 @@ RegisterNetEvent('elevator:teleport', function(coords)
 
     Wait(1500)  
 end)
+
