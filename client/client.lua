@@ -1,5 +1,6 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 local lastTeleportTime = 0  
+local isTeleporting = false 
 
 CreateThread(function()
     while true do
@@ -11,35 +12,37 @@ CreateThread(function()
         local playerJob = playerData.job.name
         local playerGrade = playerData.job.grade.level  
 
-        for _, elevator in pairs(Config.Elevators) do
-            for i, buttonCoord in ipairs(elevator.buttonCoords) do
-                local dist = #(playerCoords - buttonCoord)
+        if not isTeleporting then
+            for _, elevator in pairs(Config.Elevators) do
+                for i, buttonCoord in ipairs(elevator.buttonCoords) do
+                    local dist = #(playerCoords - buttonCoord)
 
-                local floor = elevator.floors[i]
-                local hasAccess = true
+                    local floor = elevator.floors[i]
+                    local hasAccess = true
 
-                if floor and floor.jobRestricted then
-                    hasAccess = false
-                    for _, jobData in ipairs(floor.jobRestricted) do
-                        if playerJob == jobData.name and playerGrade >= (jobData.minGrade or 0) then
-                            hasAccess = true
-                            break
+                    if floor and floor.jobRestricted then
+                        hasAccess = false
+                        for _, jobData in ipairs(floor.jobRestricted) do
+                            if playerJob == jobData.name and playerGrade >= (jobData.minGrade or 0) then
+                                hasAccess = true
+                                break
+                            end
                         end
                     end
-                end
 
-                if dist < 1.5 and hasAccess then
-                    sleep = 0
-                    if not textDisplayed then
-                        if Config.showTextUI == "qb" then
-                            exports["qb-core"]:DrawText("[E] Use Elevator", "left")
-                        elseif Config.showTextUI == "ox" then
-                            lib.showTextUI("[E] Use Elevator", { position = "left-center" })
+                    if dist < 1.5 and hasAccess then
+                        sleep = 0
+                        if not textDisplayed then
+                            if Config.showTextUI == "qb" then
+                                exports["qb-core"]:DrawText("[E] Use Elevator", "left")
+                            elseif Config.showTextUI == "ox" then
+                                lib.showTextUI("[E] Use Elevator", { position = "left-center" })
+                            end
+                            textDisplayed = true
                         end
-                        textDisplayed = true
-                    end
-                    if IsControlJustPressed(0, 38) then 
-                        TriggerEvent("elevator:openMenu", { elevator = elevator })
+                        if IsControlJustPressed(0, 38) then 
+                            TriggerEvent("elevator:openMenu", { elevator = elevator })
+                        end
                     end
                 end
             end
@@ -58,6 +61,8 @@ CreateThread(function()
 end)
 
 RegisterNetEvent('elevator:openMenu', function(data)
+    if isTeleporting then return end 
+
     local elevator = data.elevator
     local menu = {
         {
@@ -101,7 +106,6 @@ RegisterNetEvent('elevator:openMenu', function(data)
         end
     end
     
-    
     table.insert(menu, {
         header = "Exit",
         icon = "fas fa-times",
@@ -112,7 +116,6 @@ RegisterNetEvent('elevator:openMenu', function(data)
 
     exports['qb-menu']:openMenu(menu)
 end)
-
 
 RegisterNetEvent('elevator:teleport', function(coords)
     local playerPed = PlayerPedId()
@@ -125,6 +128,7 @@ RegisterNetEvent('elevator:teleport', function(coords)
     end
 
     lastTeleportTime = currentTime  
+    isTeleporting = true 
 
     FreezeEntityPosition(playerPed, true)
 
@@ -147,7 +151,6 @@ RegisterNetEvent('elevator:teleport', function(coords)
     DoScreenFadeIn(2000)  
 
     FreezeEntityPosition(playerPed, false)
-
+    isTeleporting = false 
     Wait(1500)  
 end)
-
