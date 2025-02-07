@@ -1,0 +1,149 @@
+local QBCore = exports['qb-core']:GetCoreObject()
+local lastTeleportTime = 0  
+
+CreateThread(function()
+    while true do
+        local sleep = 1000
+        local playerPed = PlayerPedId()
+        local playerCoords = GetEntityCoords(playerPed)
+        local textDisplayed = false
+        local playerData = QBCore.Functions.GetPlayerData()
+        local playerJob = playerData.job.name
+        local playerGrade = playerData.job.grade.level  
+
+        for _, elevator in pairs(Config.Elevators) do
+            for i, buttonCoord in ipairs(elevator.buttonCoords) do
+                local dist = #(playerCoords - buttonCoord)
+
+                local floor = elevator.floors[i]
+                local hasAccess = true
+
+                if floor and floor.jobRestricted then
+                    hasAccess = false
+                    for _, jobData in ipairs(floor.jobRestricted) do
+                        if playerJob == jobData.name and playerGrade >= (jobData.minGrade or 0) then
+                            hasAccess = true
+                            break
+                        end
+                    end
+                end
+
+                if dist < 1.5 and hasAccess then
+                    sleep = 0
+                    if not textDisplayed then
+                        if Config.showTextUI == "qb" then
+                            exports["qb-core"]:DrawText("[E] Use Elevator", "left")
+                        elseif Config.showTextUI == "ox" then
+                            lib.showTextUI("[E] Use Elevator", { position = "left-center" })
+                        end
+                        textDisplayed = true
+                    end
+                    if IsControlJustPressed(0, 38) then 
+                        TriggerEvent("elevator:openMenu", { elevator = elevator })
+                    end
+                end
+            end
+        end
+        
+        if not textDisplayed then
+            if Config.showTextUI == "qb" then
+                exports["qb-core"]:HideText()
+            elseif Config.showTextUI == "ox" then
+                lib.hideTextUI()
+            end
+        end
+        
+        Wait(sleep)
+    end
+end)
+
+RegisterNetEvent('elevator:openMenu', function(data)
+    local elevator = data.elevator
+    local menu = {
+        {
+            header = "Elevator - " .. elevator.name,
+            isMenuHeader = true
+        }
+    }
+    
+    local playerPed = PlayerPedId()
+    local playerCoords = GetEntityCoords(playerPed)
+    local playerData = QBCore.Functions.GetPlayerData()
+    local playerJob = playerData.job.name
+    local playerGrade = playerData.job.grade.level  
+
+    for _, floor in ipairs(elevator.floors) do
+        local isDisabled = #(playerCoords - floor.coords) <= 1.5  
+        local hasAccess = true
+
+        if floor.jobRestricted then
+            hasAccess = false
+            for _, jobData in ipairs(floor.jobRestricted) do
+                if playerJob == jobData.name and playerGrade >= (jobData.minGrade or 0) then
+                    hasAccess = true
+                    break
+                end
+            end
+        end
+
+        if hasAccess then
+            table.insert(menu, {
+                header = floor.label,
+                icon = floor.icon,
+                disabled = isDisabled,  
+                params = isDisabled and nil or {  
+                    event = "elevator:teleport",
+                    args = floor.coords
+                }
+            })
+        end
+    end
+    
+    table.insert(menu, {
+        header = "Exit",
+        icon = "fas fa-times",
+        params = {
+            event = "qb-menu:closeMenu"
+        }
+    })
+
+    exports['qb-menu']:openMenu(menu)
+    if Config.menu == "qb" then
+        exports["qb-core"]:HideText()
+    elseif Config.menu == "ox" then
+        lib.hideTextUI()
+    end
+end)
+
+
+
+RegisterNetEvent('elevator:teleport', function(coords)
+    local playerPed = PlayerPedId()
+    local currentTime = GetGameTimer()
+    local timeRemaining = math.max(0, Config.ElevatorWaitTime - (currentTime - lastTeleportTime)) / 1000 
+
+    if currentTime - lastTeleportTime < Config.ElevatorWaitTime then  
+        QBCore.Functions.Notify(string.format("You must wait %.1f seconds before using the elevator again.", timeRemaining), "error")
+        return  
+    end
+
+    lastTeleportTime = currentTime
+
+    if Config.EnableElevatorSound then
+        TriggerServerEvent("InteractSound_SV:PlayOnSource", "elevator_arrival", 0.5)
+    end
+
+    DoScreenFadeOut(2500)  
+    Wait(4000)  
+
+    SetEntityCoords(playerPed, coords.x, coords.y, coords.z, false, false, false, false)
+
+    if Config.EnableElevatorSound then
+        TriggerServerEvent("InteractSound_SV:PlayOnSource", "elevator_start", 0.5)
+    end
+
+    Wait(1500)  
+    DoScreenFadeIn(2000)  
+
+    Wait(1500)  
+end)
