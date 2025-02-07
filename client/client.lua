@@ -1,6 +1,6 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 local lastTeleportTime = 0  
-local isTeleporting = false 
+
 CreateThread(function()
     while true do
         local sleep = 1000
@@ -11,37 +11,35 @@ CreateThread(function()
         local playerJob = playerData.job.name
         local playerGrade = playerData.job.grade.level  
 
-        if not isTeleporting then  
-            for _, elevator in pairs(Config.Elevators) do
-                for i, buttonCoord in ipairs(elevator.buttonCoords) do
-                    local dist = #(playerCoords - buttonCoord)
+        for _, elevator in pairs(Config.Elevators) do
+            for i, buttonCoord in ipairs(elevator.buttonCoords) do
+                local dist = #(playerCoords - buttonCoord)
 
-                    local floor = elevator.floors[i]
-                    local hasAccess = true
+                local floor = elevator.floors[i]
+                local hasAccess = true
 
-                    if floor and floor.jobRestricted then
-                        hasAccess = false
-                        for _, jobData in ipairs(floor.jobRestricted) do
-                            if playerJob == jobData.name and playerGrade >= (jobData.minGrade or 0) then
-                                hasAccess = true
-                                break
-                            end
+                if floor and floor.jobRestricted then
+                    hasAccess = false
+                    for _, jobData in ipairs(floor.jobRestricted) do
+                        if playerJob == jobData.name and playerGrade >= (jobData.minGrade or 0) then
+                            hasAccess = true
+                            break
                         end
                     end
+                end
 
-                    if dist < 1.5 and hasAccess then
-                        sleep = 0
-                        if not textDisplayed then
-                            if Config.showTextUI == "qb" then
-                                exports["qb-core"]:DrawText("[E] Use Elevator", "left")
-                            elseif Config.showTextUI == "ox" then
-                                lib.showTextUI("[E] Use Elevator", { position = "left-center" })
-                            end
-                            textDisplayed = true
+                if dist < 1.5 and hasAccess then
+                    sleep = 0
+                    if not textDisplayed then
+                        if Config.showTextUI == "qb" then
+                            exports["qb-core"]:DrawText("[E] Use Elevator", "left")
+                        elseif Config.showTextUI == "ox" then
+                            lib.showTextUI("[E] Use Elevator", { position = "left-center" })
                         end
-                        if IsControlJustPressed(0, 38) then 
-                            TriggerEvent("elevator:openMenu", { elevator = elevator })
-                        end
+                        textDisplayed = true
+                    end
+                    if IsControlJustPressed(0, 38) then 
+                        TriggerEvent("elevator:openMenu", { elevator = elevator })
                     end
                 end
             end
@@ -130,7 +128,7 @@ RegisterNetEvent('elevator:teleport', function(coords)
     end
 
     lastTeleportTime = currentTime  
-    isTeleporting = true  
+    isTeleporting = true  -- تعيين حالة النقل لتجنب ظهور النص
 
     if Config.showTextUI == "qb" then
         exports["qb-core"]:HideText()
