@@ -13,7 +13,6 @@ shared_script {
 }
 client_script {
     'client/*.lua',
-    '@ox_lib/init.lua'
 }
 
 
