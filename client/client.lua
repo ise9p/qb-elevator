@@ -128,7 +128,7 @@ RegisterNetEvent('elevator:teleport', function(coords)
     end
 
     lastTeleportTime = currentTime  
-    isTeleporting = true  -- تعيين حالة النقل لتجنب ظهور النص
+    isTeleporting = true  
 
     if Config.showTextUI == "qb" then
         exports["qb-core"]:HideText()
