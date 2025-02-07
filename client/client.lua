@@ -126,22 +126,27 @@ RegisterNetEvent('elevator:teleport', function(coords)
 
     lastTeleportTime = currentTime  
 
+    FreezeEntityPosition(playerPed, true)
+
     if Config.EnableElevatorSound then
-        local arrivalSound = Config.ElevatorArrivalSound or "elevator_arrival" 
+        local arrivalSound = Config.ElevatorArrivalSound or "elevator_arrival"
         TriggerServerEvent("InteractSound_SV:PlayOnSource", arrivalSound, 0.5)
     end
 
     DoScreenFadeOut(2500)  
     Wait(4000) 
-    SetEntityCoords(playerPed, coords.x, coords.y, coords.z, false, false, false, false)
+
+    SetEntityCoords(playerPed, coords.x, coords.y, coords.z - 1.0, false, false, false, true)
 
     if Config.EnableElevatorSound then
-        local startSound = Config.ElevatorStartSound or "elevator_start" 
+        local startSound = Config.ElevatorStartSound or "elevator_start"
         TriggerServerEvent("InteractSound_SV:PlayOnSource", startSound, 0.5)
     end
 
     Wait(1500)  
     DoScreenFadeIn(2000)  
+
+    FreezeEntityPosition(playerPed, false)
 
     Wait(1500)  
 end)
