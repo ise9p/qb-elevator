@@ -35,9 +35,9 @@ CreateThread(function()
                         if not textDisplayed then
                             if Config.showTextUI == "qb" then
                                 exports["qb-core"]:DrawText("[E] Use Elevator", "left")
-                            elseif Config.showTextUI == "ox" then
+                            elseif Config.showTextUI == "ox" and lib and lib.showTextUI then
                                 lib.showTextUI("[E] Use Elevator", { position = "left-center" })
-                            end
+                            end                            
                             textDisplayed = true
                         end
                         if IsControlJustPressed(0, 38) then 
