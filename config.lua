@@ -15,11 +15,11 @@ Config.Elevators = {
         name = "Maze Bank",
         floors = {
             {label = "Lobby", coords = vector3(-70.66, -801.16, 44.23), icon = "fas fa-building"},
-            {label = "VIP Office", coords = vector3(-76.68, -830.31, 243.39), icon = "fas fa-user-tie"}
+            {label = "VIP Office", coords = vector3(-76.68, -830.31, 243.39), icon = "fas fa-user-tie", jobRestricted = { {name = "police", minGrade = 1} }}
         },
         buttonCoords = {
             vector3(-70.66, -801.16, 44.23),
             vector3(-76.68, -830.31, 243.39)
         }
-    }
+    },
 }
