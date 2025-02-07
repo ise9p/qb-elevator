@@ -82,7 +82,8 @@ RegisterNetEvent('elevator:openMenu', function(data)
     for index, floor in ipairs(elevator.floors) do
         local isDisabled = #(playerCoords - floor.coords) <= 1.5  
         local hasAccess = true
-    
+        local floorIcon = floor.icon or "fas fa-building"  
+        
         if floor.jobRestricted then
             hasAccess = false
             for _, jobData in ipairs(floor.jobRestricted) do
@@ -92,18 +93,26 @@ RegisterNetEvent('elevator:openMenu', function(data)
                 end
             end
         end
-    
-        if hasAccess then
-            table.insert(menu, {
-                header = string.format("%d. %s", index, floor.label),  
-                icon = floor.icon,
-                disabled = isDisabled,  
-                params = isDisabled and nil or {  
-                    event = "elevator:teleport",
-                    args = floor.coords
-                }
-            })
+        
+        if not hasAccess then
+            floorIcon = "fas fa-lock" 
         end
+        
+        -- إضافة الطابق إلى القائمة
+        local floorParams = nil
+        if isDisabled == false and hasAccess then
+            floorParams = {  
+                event = "elevator:teleport",
+                args = floor.coords
+            }
+        end
+        
+        table.insert(menu, {
+            header = string.format("%d. %s", index, floor.label),  
+            icon = floorIcon,  
+            disabled = isDisabled,  
+            params = floorParams
+        })
     end
     
     table.insert(menu, {
@@ -116,6 +125,8 @@ RegisterNetEvent('elevator:openMenu', function(data)
 
     exports['qb-menu']:openMenu(menu)
 end)
+
+
 
 RegisterNetEvent('elevator:teleport', function(coords)
     local playerPed = PlayerPedId()
