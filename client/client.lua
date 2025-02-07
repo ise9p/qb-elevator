@@ -114,9 +114,6 @@ RegisterNetEvent('elevator:openMenu', function(data)
 end)
 
 
-
-
-
 RegisterNetEvent('elevator:teleport', function(coords)
     local playerPed = PlayerPedId()
     local currentTime = GetGameTimer()
@@ -128,13 +125,6 @@ RegisterNetEvent('elevator:teleport', function(coords)
     end
 
     lastTeleportTime = currentTime  
-    isTeleporting = true  
-
-    if Config.showTextUI == "qb" then
-        exports["qb-core"]:HideText()
-    elseif Config.showTextUI == "ox" then
-        lib.hideTextUI()
-    end
 
     if Config.EnableElevatorSound then
         local arrivalSound = Config.ElevatorArrivalSound or "elevator_arrival" 
@@ -153,7 +143,6 @@ RegisterNetEvent('elevator:teleport', function(coords)
     Wait(1500)  
     DoScreenFadeIn(2000)  
 
-    Wait(1500)
-    isTeleporting = false 
+    Wait(1500)  
 end)
 
