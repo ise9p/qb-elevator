@@ -1,7 +1,7 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 local lastTeleportTime = 0  
 local isTeleporting = false 
-
+RR
 CreateThread(function()
     while true do
         local sleep = 1000
