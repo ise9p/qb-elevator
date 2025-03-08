@@ -5,12 +5,13 @@ This document outlines the configuration settings for the Elevator System in the
 
 ### Key Points:
 
-1. Elevator Settings: Easily control features like sound effects, UI, and waiting times.
+1. Elevator Settings: Easily control features like sound effects, UI, Menu, and waiting times.
 2. Elevator Locations: Add and configure different elevators with restricted access and specific floors.
 3. Customizable: The configuration is flexible enough to support multiple elevators, floors, and job-specific access.
 
 ##  Features
 - 🤝 using DrawText in qbcore or ox_lib
+- 🤝 using Menu in qbcore or ox_lib
 - 🔁 there's uses system
 
 
@@ -27,6 +28,7 @@ interact-sound/clinet/html/sounds copy hem
 ## 💻 Requirements
 -  FiveM server
 -  qbocre DrawText or ox_lib
+-  qbocre Mneu or Mneu ox_lib
 
 
 #  Support
