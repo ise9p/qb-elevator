@@ -2,8 +2,9 @@ Config = {}
 
 Config.EnableElevatorSound = true 
 
-Config.showTextUI = "qb" 
+Config.showTextUI = "ox"  -- "ox" or "qb"
 
+Config.menu = "ox" -- "ox" or "qb"
 
 Config.ElevatorWaitTime = 3000
 

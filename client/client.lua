@@ -9,15 +9,14 @@ CreateThread(function()
         local playerCoords = GetEntityCoords(playerPed)
         local textDisplayed = false
         local playerData = QBCore.Functions.GetPlayerData()
-        local playerJob = playerData.job.name
-        local playerGrade = playerData.job.grade.level  
+        local playerJob = playerData.job and playerData.job.name or "unknown"
+        local playerGrade = playerData.job and playerData.job.grade.level or 0 
 
         if not isTeleporting then
-            for _, elevator in pairs(Config.Elevators) do
-                for i, buttonCoord in ipairs(elevator.buttonCoords) do
+            for _, elevator in pairs(Config.Elevators or {}) do
+                for i, buttonCoord in ipairs(elevator.buttonCoords or {}) do
                     local dist = #(playerCoords - buttonCoord)
-
-                    local floor = elevator.floors[i]
+                    local floor = elevator.floors and elevator.floors[i] or nil
                     local hasAccess = true
 
                     if floor and floor.jobRestricted then
@@ -61,25 +60,33 @@ CreateThread(function()
 end)
 
 RegisterNetEvent('elevator:openMenu', function(data)
-    if isTeleporting then return end 
+    if isTeleporting or not data or not data.elevator then return end 
 
     local elevator = data.elevator
-    local menu = {
-        {
-            header = "Elevator - " .. elevator.name,  
+    local menu = {}
+    
+    if Config.menu == "qb" then
+        table.insert(menu, {
+            header = "Elevator - " .. (elevator.name or "Unknown"),  
             isMenuHeader = true,  
             icon = "fas fa-building", 
             text = "Select a floor to go to",  
+        })
+    elseif Config.menu == "ox" then
+        menu = {
+            id = "elevator_menu",
+            title = "Elevator - " .. (elevator.name or "Unknown"),
+            options = {}
         }
-    }    
+    end
     
     local playerPed = PlayerPedId()
     local playerCoords = GetEntityCoords(playerPed)
     local playerData = QBCore.Functions.GetPlayerData()
-    local playerJob = playerData.job.name
-    local playerGrade = playerData.job.grade.level  
+    local playerJob = playerData.job and playerData.job.name or "unknown"
+    local playerGrade = playerData.job and playerData.job.grade.level or 0  
 
-    for index, floor in ipairs(elevator.floors) do
+    for index, floor in ipairs(elevator.floors or {}) do
         local isDisabled = #(playerCoords - floor.coords) <= 1.5  
         local hasAccess = true
         local floorIcon = floor.icon or "fas fa-building"  
@@ -98,37 +105,48 @@ RegisterNetEvent('elevator:openMenu', function(data)
             floorIcon = "fas fa-lock" 
         end
         
-        -- إضافة الطابق إلى القائمة
-        local floorParams = nil
-        if isDisabled == false and hasAccess then
-            floorParams = {  
-                event = "elevator:teleport",
-                args = floor.coords
-            }
+        if Config.menu == "qb" then
+            table.insert(menu, {
+                header = string.format("%d. %s", index, floor.label),  
+                icon = floorIcon,  
+                disabled = isDisabled,  
+                params = hasAccess and { event = "elevator:teleport", args = floor.coords } or nil
+            })
+        elseif Config.menu == "ox" then
+            table.insert(menu.options, {
+                title = string.format("%d. %s", index, floor.label),
+                description = hasAccess and "Click" or "Denied",  
+                icon = floorIcon,
+                disabled = isDisabled,
+                event = hasAccess and "elevator:teleport" or nil,
+                args = hasAccess and floor.coords or nil
+            })
         end
-        
-        table.insert(menu, {
-            header = string.format("%d. %s", index, floor.label),  
-            icon = floorIcon,  
-            disabled = isDisabled,  
-            params = floorParams
-        })
     end
     
-    table.insert(menu, {
-        header = "Exit",
-        icon = "fas fa-times",
-        params = {
-            event = "qb-menu:closeMenu"
-        }
-    })
-
-    exports['qb-menu']:openMenu(menu)
+    if Config.menu == "qb" then
+        table.insert(menu, {
+            header = "Exit",
+            icon = "fas fa-times",
+            params = { event = "qb-menu:closeMenu" }
+        })
+        exports['qb-menu']:openMenu(menu)
+    elseif Config.menu == "ox" then
+        table.insert(menu.options, {
+            title = "Exit",
+            icon = "fas fa-times",
+            event = "ox_lib:closeMenu"
+        })
+        lib.registerContext(menu)
+        lib.showContext("elevator_menu")
+    end
 end)
 
 
 
 RegisterNetEvent('elevator:teleport', function(coords)
+    if not coords then return end
+
     local playerPed = PlayerPedId()
     local currentTime = GetGameTimer()
     local timeRemaining = math.max(0, Config.ElevatorWaitTime - (currentTime - lastTeleportTime)) / 1000 
@@ -144,8 +162,7 @@ RegisterNetEvent('elevator:teleport', function(coords)
     FreezeEntityPosition(playerPed, true)
 
     if Config.EnableElevatorSound then
-        local arrivalSound = Config.ElevatorArrivalSound or "elevator_arrival"
-        TriggerServerEvent("InteractSound_SV:PlayOnSource", arrivalSound, 0.5)
+        TriggerServerEvent("InteractSound_SV:PlayOnSource", Config.ElevatorArrivalSound or "elevator_arrival", 0.5)
     end
 
     DoScreenFadeOut(2500)  
@@ -154,8 +171,7 @@ RegisterNetEvent('elevator:teleport', function(coords)
     SetEntityCoords(playerPed, coords.x, coords.y, coords.z - 1.0, false, false, false, true)
 
     if Config.EnableElevatorSound then
-        local startSound = Config.ElevatorStartSound or "elevator_start"
-        TriggerServerEvent("InteractSound_SV:PlayOnSource", startSound, 0.5)
+        TriggerServerEvent("InteractSound_SV:PlayOnSource", Config.ElevatorStartSound or "elevator_start", 0.5)
     end
 
     Wait(1500)  
