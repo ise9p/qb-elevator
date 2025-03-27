@@ -2,7 +2,88 @@ local QBCore = exports['qb-core']:GetCoreObject()
 local lastTeleportTime = 0  
 local isTeleporting = false 
 
+-- Function to create targets for elevator buttons
+local function CreateElevatorTargets()
+    for _, elevator in pairs(Config.Elevators or {}) do
+        for i, buttonCoord in ipairs(elevator.buttonCoords or {}) do
+            local floor = elevator.floors and elevator.floors[i] or nil
+            
+            if Config.target == "qb" then
+                exports['qb-target']:AddBoxZone(
+                    "elevator_" .. elevator.name .. "_" .. i,
+                    buttonCoord,
+                    1.0, 1.0,
+                    {
+                        name = "elevator_" .. elevator.name .. "_" .. i,
+                        heading = 0.0,
+                        debugPoly = false,
+                        minZ = buttonCoord.z - 1.0,
+                        maxZ = buttonCoord.z + 1.0
+                    },
+                    {
+                        options = {
+                            {
+                                icon = "fas fa-elevator",
+                                label = "Use Elevator",
+                                action = function()
+                                    TriggerEvent("elevator:openMenu", { elevator = elevator })
+                                end,
+                                canInteract = function()
+                                    if not floor or not floor.jobRestricted then return true end
+                                    local playerData = QBCore.Functions.GetPlayerData()
+                                    local playerJob = playerData.job and playerData.job.name or "unknown"
+                                    local playerGrade = playerData.job and playerData.job.grade.level or 0
+                                    for _, jobData in ipairs(floor.jobRestricted) do
+                                        if playerJob == jobData.name and playerGrade >= (jobData.minGrade or 0) then
+                                            return true
+                                        end
+                                    end
+                                    return false
+                                end
+                            }
+                        },
+                        distance = Config.interactionDistance
+                    }
+                )
+            elseif Config.target == "ox" then
+                exports.ox_target:addBoxZone({
+                    coords = buttonCoord,
+                    size = vec3(1.0, 1.0, 2.0),
+                    rotation = 0.0,
+                    debug = false,
+                    options = {
+                        {
+                            icon = "fas fa-elevator",
+                            label = "Use Elevator",
+                            onSelect = function()
+                                TriggerEvent("elevator:openMenu", { elevator = elevator })
+                            end,
+                            canInteract = function()
+                                if not floor or not floor.jobRestricted then return true end
+                                local playerData = QBCore.Functions.GetPlayerData()
+                                local playerJob = playerData.job and playerData.job.name or "unknown"
+                                local playerGrade = playerData.job and playerData.job.grade.level or 0
+                                for _, jobData in ipairs(floor.jobRestricted) do
+                                    if playerJob == jobData.name and playerGrade >= (jobData.minGrade or 0) then
+                                        return true
+                                    end
+                                end
+                                return false
+                            end
+                        }
+                    }
+                })
+            end
+        end
+    end
+end
+
 CreateThread(function()
+    if Config.useTarget then
+        CreateElevatorTargets()
+        return  -- Exit the thread if using target system
+    end
+
     while true do
         local sleep = 1000
         local playerPed = PlayerPedId()
