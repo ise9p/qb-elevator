@@ -1,40 +1,40 @@
-# Elevator System Configuration
+# qb-elevator  
 
-This document outlines the configuration settings for the Elevator System in the game.
+## Description  
+qb-elevator is an advanced and configurable elevator system for QBCore. It supports different interaction methods and targeting systems, allowing players to travel between floors easily.  
 
+## Features  
+✅ Choose between **Eye Interaction (ox_target/qb-target)** or **DrawText**  
+✅ Configurable **menu system** (`ox` or `qb`)  
+✅ Supports **elevator sound effects**  
+✅ **Job-restricted floors** for specific roles  
+✅ Fully customizable via `config.lua`  
 
-### Key Points:
+## Configuration  
 
-1. Elevator Settings: Easily control features like sound effects, UI, Menu, and waiting times.
-2. Elevator Locations: Add and configure different elevators with restricted access and specific floors.
-3. Customizable: The configuration is flexible enough to support multiple elevators, floors, and job-specific access.
+Edit `config.lua` to customize the script:  
 
-##  Features
-- 🤝 using DrawText in qbcore or ox_lib
-- 🤝 using Menu in qbcore or ox_lib
-- 🔁 there's uses system
+- **Interaction System:**  
+  - `Config.showTextUI = "ox"` → `"ox"` or `"qb"` for text display  
+  - `Config.menu = "ox"` → `"ox"` or `"qb"` for menu type  
+  - `Config.useTarget = true` → Enable/disable target system  
+  - `Config.target = "qb"` → `"qb"` or `"ox"` for target system type  
 
+- **Elevator Settings:**  
+  - `Config.ElevatorWaitTime = 2000` → Time (in ms) before elevator starts moving  
+  - `Config.ElevatorArrivalSound = "elevator_arrival"` → Sound when elevator arrives  
+  - `Config.ElevatorStartSound = "elevator_start"` → Sound when elevator starts  
 
-#  Installation & Setup
+- **Elevators Setup:**  
+  - Each elevator has multiple **floors**, defined by their coordinates and labels  
+  - Floors can have **job restrictions** (e.g., only police officers can access certain floors)  
 
-The following  options can be adjusted to customize the Elevator script.
+## Installation  
 
-1. open folder [sounds]  and copy file sound to interact-sound 
+1. **Download & Extract** the script into your `resources` folder.  
+2. **Add to Server.cfg:**  
+   ```cfg
+   ensure qb-elevator
 
-interact-sound/clinet/html/sounds copy hem
-
-2. install ox_lib [https://github.com/overextended/ox_lib]
-
-## 💻 Requirements
--  FiveM server
--  qbocre DrawText or ox_lib
--  qbocre Mneu or Mneu ox_lib
-
-
-#  Support
-Encountered a bug  or have an awesome feature suggestion🌠? Don't hesitate to create an issue in the repository.
-
-# Customization
-The script is fully open to modifications. Feel free to tweak it to fit your server's unique needs! 
-
-
+## Credits
+Developed by Se9p Script
